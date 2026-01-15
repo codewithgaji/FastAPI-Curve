@@ -67,3 +67,18 @@ def delete_product(id: int):
       return "Product {Id} Deleted Successfully"
   
   return "Product {id} Not Found"
+
+
+
+# Defining Function to Dump Data
+
+def init_db():
+  db = session()
+  count = db.query(database_models.Product).count() # This is used to check the db and count if there are data items already
+
+  if count == 0:
+    for product in products:
+      db.add(database_models.Product(**product.model_dump())) # This is used to dump the pydantic model data to sqlalchemy while (**) unpacking it so it can be easily used.
+    db.commit()
+
+init_db()
