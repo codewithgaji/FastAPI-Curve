@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from models import Product
+from database import  session, engine
+import database_models
 
 app = FastAPI()
 
+database_models.Base.metadata.create_all(bind=engine) # This is what creates the tables in the database, using "metadata" it assigns each attribute their own properties
 
 
 
@@ -21,8 +24,18 @@ products = [
 
 
 @app.get("/products")
-def get_products():
+def get_all_products():
+  
+  # Connect to database
+  db = session()
+
+  # Query Database
+  db.query()
+
+ 
   return products
+
+
 
 @app.get("/product/{id}")
 def get_product_by_id(id: int): 
