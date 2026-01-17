@@ -8,7 +8,7 @@ The goal of this repo is not just theory, but **practical backend API developmen
 
 ## 🎯 Purpose of This Repository
 
-This repo is used to
+This repo is used to:
 
 - Learn **FastAPI fundamentals**
 - Build **RESTful backend APIs**
