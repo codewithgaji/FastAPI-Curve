@@ -1,11 +1,39 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from models import Product
 from database import  session, engine
 import database_models
+from sqlalchemy.orm import Session
 
 app = FastAPI()
 
 database_models.Base.metadata.create_all(bind=engine) # This is what creates the tables in the database, using "metadata" it assigns each attribute their own properties
+
+# Defining Function to Dump Data
+
+def init_db():
+  db = session()
+  count = db.query(database_models.Product).count() # This is used to check the db and count if there are data items already
+
+  if count == 0:
+    for product in products:
+      db.add(database_models.Product(**product.model_dump())) # This is used to dump the pydantic model data to sqlalchemy while (**) unpacking it so it can be easily used.
+    db.commit()
+
+init_db()
+
+
+def get_db_session():
+  try:
+    db = session()
+    yield db
+  finally:
+    db.close()
+
+
+
+
+
+
 
 
 
@@ -23,14 +51,19 @@ products = [
 ]
 
 
-@app.get("/products")
-def get_all_products():
-  
-  # Connect to database
-  db = session()
 
-  # Query Database
-  db.query()
+
+@app.get("/products")
+def get_all_products(db: Session = Depends(get_db_session)):
+  db_products = db.query(database_models.Product).all()
+  if not db_products:
+    return "No Products found"  
+  return db_products  
+  # # Connect to database
+  # db = session()
+
+  # # Query Database
+  # db.query()
 
  
   return products
@@ -38,47 +71,65 @@ def get_all_products():
 
 
 @app.get("/product/{id}")
-def get_product_by_id(id: int): 
-  for product in products:
-    if product.id == id:
-      return product
+def get_product_by_id(id: int, db: Session = Depends(get_db_session)): 
+  db_products = db.query(database_models.Product).filter(database_models.Product.id == id).first()
+  if not db_products:
+    return f"Product with Id: {id} Not found"
+  return db_products
+  # for product in products:
+  #   if product.id == id:
+  #     return product
   
-  return "Product {id} Not Found"
+  # return "Product {id} Not Found"
 
 
-@app.put("/product")
-def update_product(id: int, product: Product):
-  for i in range(len(products)):
-    if products[i].id == id:
-      product[i] = product
-      return "Product Updated Successfully"
+@app.put("/product/{id}")
+def update_product(id: int, product: Product, db: Session = Depends(get_db_session)):
+  db_products = db.query(database_models.Product).filter(database_models.Product.id == id).first()
+  if not db_products:
+    return f"Product {id} Does Not Exist, Update Failed!"
+  db_products.name = product.name
+  db_products.description = product.description
+  db_products.price = product.price
+  db_products.quantity = product.quantity
+  db.commit()
+  return f"Product {id} Successfully Updated!"
+  # for i in range(len(products)):
+  #   if products[i].id == id:
+  #     product[i] = product
+  #     return "Product Updated Successfully"
 
 
 @app.post("/product")
-def add_product(product: Product):
-  products.append(product)
-  return "Product Added Successfully"
+def add_product(product: Product, db: Session = Depends(get_db_session)):
+  db_product = db.query(database_models.Product).filter(database_models.Product.id == product.id).first()
+  if not db_product:
+    db.add(database_models.Product(**product.model_dump()))
+    db.commit()
+    return f"{product.name} Added Successfully"
+  return f"Product with Id: {db_product.id} already Exists"
+
+
+
+
+
 
 @app.delete("/product")
-def delete_product(id: int):
-  for i in range(len(products)):
-    if products[i].id == id:
-      del products[i]
-      return "Product {Id} Deleted Successfully"
-  
-  return "Product {id} Not Found"
-
-
-
-# Defining Function to Dump Data
-
-def init_db():
-  db = session()
-  count = db.query(database_models.Product).count() # This is used to check the db and count if there are data items already
-
-  if count == 0:
-    for product in products:
-      db.add(database_models.Product(**product.model_dump())) # This is used to dump the pydantic model data to sqlalchemy while (**) unpacking it so it can be easily used.
+def delete_product(id: int, db: Session = Depends(get_db_session)):
+    db_product = db.query(database_models.Product).filter(database_models.Product.id == id).first()
+    if not db_product:
+      return f"Product with id:{id} Not Found"
+    db.delete(db_product)
     db.commit()
+    return f"{db_product.name} Deleted Successfully"
+    
 
-init_db()
+  # for i in range(len(products)):
+  #   if products[i].id == id:
+  #     del products[i]
+  #     return "Product {Id} Deleted Successfully"
+  
+  # return "Product {id} Not Found"
+
+
+
