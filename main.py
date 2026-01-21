@@ -3,8 +3,19 @@ from models import Product
 from database import  session, engine
 import database_models
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+
+
+# ENABLE CORS
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=["http://localhost:3000"],
+  allow_methods = ["*"]
+)
+
 
 database_models.Base.metadata.create_all(bind=engine) # This is what creates the tables in the database, using "metadata" it assigns each attribute their own properties
 
@@ -70,7 +81,7 @@ def get_all_products(db: Session = Depends(get_db_session)):
 
 
 
-@app.get("/product/{id}")
+@app.get("/products/{id}")
 def get_product_by_id(id: int, db: Session = Depends(get_db_session)): 
   db_products = db.query(database_models.Product).filter(database_models.Product.id == id).first()
   if not db_products:
@@ -83,7 +94,7 @@ def get_product_by_id(id: int, db: Session = Depends(get_db_session)):
   # return "Product {id} Not Found"
 
 
-@app.put("/product/{id}")
+@app.put("/products/{id}")
 def update_product(id: int, product: Product, db: Session = Depends(get_db_session)):
   db_products = db.query(database_models.Product).filter(database_models.Product.id == id).first()
   if not db_products:
@@ -100,7 +111,7 @@ def update_product(id: int, product: Product, db: Session = Depends(get_db_sessi
   #     return "Product Updated Successfully"
 
 
-@app.post("/product")
+@app.post("/products")
 def add_product(product: Product, db: Session = Depends(get_db_session)):
   db_product = db.query(database_models.Product).filter(database_models.Product.id == product.id).first()
   if not db_product:
@@ -114,7 +125,7 @@ def add_product(product: Product, db: Session = Depends(get_db_session)):
 
 
 
-@app.delete("/product")
+@app.delete("/products/{id}")
 def delete_product(id: int, db: Session = Depends(get_db_session)):
     db_product = db.query(database_models.Product).filter(database_models.Product.id == id).first()
     if not db_product:
