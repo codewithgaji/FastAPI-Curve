@@ -18,7 +18,7 @@ This repo is used to:
 - Build **data & graph-ready APIs**
 - Practice **clean backend architecture**
 
-All projects here are built incrementally, from simple examples to more advanced 
+All projects here are built incrementally, from simple examples to more advanced systems.
 
 ---
 
