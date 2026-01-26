@@ -2,7 +2,7 @@
 
 This repository documents my journey learning **FastAPI** by building real-world backend systems step by step.
 
-The goal of this repo is not just theory, but **practical backend API development**, covering authentication, voting systems, and data-driven features like graphing and analytics
+The goal of this repo is not just theory, but **practical backend API development**, covering authentication, voting systems, and data-driven features like graphing and analytics.
 
 ---
 
@@ -18,7 +18,7 @@ This repo is used to:
 - Build **data & graph-ready APIs**
 - Practice **clean backend architecture**
 
-All projects here are built incrementally, from simple examples to more advanced systems.
+All projects here are built incrementally, from simple examples to more advanced 
 
 ---
 
